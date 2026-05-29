@@ -3,181 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025 한국 반려동물 보고서 통계</title>
+    <title>반려동물 통계 대시보드</title>
     <style>
-        /* 기본 스타일 초기화 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Malgun Gothic', sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f8f9fa; }
+        :root {
+            --primary-color: #f39c12;
+            --bg-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #333333;
+        }
 
-        /* 화면 전환 컨테이너 */
-        .container { width: 100%; height: 100%; position: relative; }
-        
-        /* 개별 창 (섹션) */
-        .page { 
-            width: 100%; 
-            height: 100%; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            opacity: 0; 
-            visibility: hidden; 
-            transition: opacity 0.5s ease, visibility 0.5s;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 40px;
+        .stat-container {
+            font-family: 'Noto Sans KR', sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* 상단 탭 메뉴 (화면 전환용) */
+        .stat-tabs {
+            display: flex;
             background-color: #ffffff;
-        }
-        .page.active { opacity: 1; visibility: visible; }
-
-        /* 페이지별 배경 테마 색상 상단 바 */
-        .page::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: linear-gradient(90deg, #ffc107, #ff9800);
+            border-bottom: 2px solid #e0e0e0;
         }
 
-        /* 텍스트 스타일 */
-        h1 { font-size: 2.5rem; color: #333; margin-bottom: 10px; text-align: center; }
-        .subtitle { font-size: 1.2rem; color: #666; margin-bottom: 40px; text-align: center; }
-        
-        /* 요약 카드 그리드 (1페이지용) */
-        .grid-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 80%; max-width: 800px; }
-        .card { background: #f1f3f5; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card h3 { font-size: 1.2rem; color: #495057; margin-bottom: 10px; }
-        .card p { font-size: 2rem; font-weight: bold; color: #fd7e14; }
+        .tab-btn {
+            flex: 1;
+            padding: 15px 10px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
 
-        /* 그래프 구조 */
-        .chart-container { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
-        .chart-row { display: flex; align-items: center; width: 100%; }
-        .label { width: 150px; font-size: 1rem; color: #495057; font-weight: bold; }
-        .bar-container { flex-grow: 1; background-color: #e9ecef; border-radius: 10px; height: 25px; overflow: hidden; margin: 0 15px; }
-        .bar { height: 100%; background: linear-gradient(90deg, #ff9800, #ffc107); border-radius: 10px; width: 0; transition: width 1s ease-in-out; }
-        .value { width: 60px; font-size: 1rem; color: #212529; font-weight: bold; text-align: right; }
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background-color: #fffdf9;
+        }
 
-        /* 화면 네비게이션 버튼 */
-        .nav-buttons { position: absolute; bottom: 40px; display: flex; gap: 20px; z-index: 10; }
-        .btn { padding: 12px 30px; border: none; background-color: #343a40; color: white; font-size: 1rem; border-radius: 25px; cursor: pointer; transition: background 0.3s; }
-        .btn:hover { background-color: #495057; }
-        .btn:disabled { background-color: #ced4da; cursor: not-allowed; }
+        /* 통계 화면 패널 */
+        .stat-panel {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
 
-        /* 페이지 인디케이터 */
-        .indicator { position: absolute; top: 40px; right: 40px; font-size: 1.1rem; font-weight: bold; color: #868e96; }
+        .stat-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 요약 카드 스타일 */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: var(--card-color);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #eef0f2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .summary-card h4 { margin: 0 0 10px 0; color: #777; font-size: 14px; }
+        .summary-card .value { font-size: 24px; font-weight: bold; color: var(--primary-color); }
+
+        /* 그래픽 요소를 위한 구조 */
+        .chart-section {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #eef0f2;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        /* 순위 목록형 바 차트 */
+        .rank-list { margin-top: 15px; }
+        .rank-item { margin-bottom: 15px; }
+        .rank-label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .rank-bar-bg { background: #eee; height: 12px; border-radius: 6px; overflow: hidden; }
+        .rank-bar { background: var(--primary-color); height: 100%; border-radius: 6px; transition: width 1s ease-in-out; }
+        .rank-bar.cat { background: #3498db; }
+
+        /* 안내 문구 */
+        .source-footer {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            padding: 15px 30px;
+            background: #f1f1f1;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="indicator"><span id="current-page">1</span> / 4</div>
+<div class="stat-container">
+    <!-- 화면 전환 탭 버튼 -->
+    <div class="stat-tabs">
+        <button class="tab-btn active" onclick="switchPanel(0)">🐾 양육 및 선호현황</button>
+        <button class="tab-btn" onclick="switchPanel(1)">⏰ 케어 & 비만</button>
+        <button class="tab-btn" onclick="switchPanel(2)">💰 양육비 & 자금</button>
+    </div>
 
-    <!-- 창 1: 양육 가구 현황 개요 -->
-    <div class="page active" id="page-1">
-        <h1>국내 반려동물 양육 현황</h1>
-        <p class="subtitle">2024년 말 기준 대한민국 반려가구 요약 통계</p>
-        <div class="grid-summary">
-            <div class="card"><h3>반려가구</h3><p>591만 가구</p></div>
-            <div class="card"><h3>반려인 수</h3><p>1,546만 명</p></div>
-            <div class="card"><h3>양육 반려견</h3><p>546만 마리</p></div>
-            <div class="card"><h3>양육 반려묘</h3><p>217만 마리</p></div>
+    <!-- Panel 1: 양육 및 선호현황 -->
+    <div id="panel-0" class="stat-panel active">
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>반려가구 수</h4>
+                <div class="value">591만 가구</div>
+            </div>
+            <div class="summary-card">
+                <h4>반려인 수</h4>
+                <div class="value">1,546만 명</div>
+            </div>
+            <div class="summary-card">
+                <h4>반려견 수</h4>
+                <div class="value">546만 마리</div>
+            </div>
+            <div class="summary-card">
+                <h4>반려묘 수</h4>
+                <div class="value">217만 마리</div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">가장 많이 기르는 반려견 품종 (%)</div>
+            <div class="rank-list">
+                <div class="rank-item">
+                    <div class="rank-label"><span>1위 몰티즈</span><span>20.4%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 20.4%;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>2위 푸들</span><span>18.9%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 18.9%;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>3위 믹스견</span><span>15.1%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 15.1%;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>4위 포메라니안</span><span>12.8%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 12.8%;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">가장 많이 기르는 반려묘 품종 (%)</div>
+            <div class="rank-list">
+                <div class="rank-item">
+                    <div class="rank-label"><span>1위 코리안 숏헤어</span><span>44.7%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 44.7%;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>2위 러시안블루</span><span>12.8%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 12.8%;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>3위 페르시안</span><span>9.6%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 9.6%;"></div></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 창 2: 선호 품종 순위 (반려견) -->
-    <div class="page" id="page-2">
-        <h1>가장 사랑받는 반려견 품종 Top 5</h1>
-        <p class="subtitle">국내 반려견 가구 기준 선호도 조사 (단위: %)</p>
-        <div class="chart-container">
-            <div class="chart-row"><div class="label">몰티즈</div><div class="bar-container"><div class="bar" data-width="20.4%"></div></div><div class="value">20.4%</div></div>
-            <div class="chart-row"><div class="label">푸들</div><div class="bar-container"><div class="bar" data-width="18.9%"></div></div><div class="value">18.9%</div></div>
-            <div class="chart-row"><div class="label">믹스견</div><div class="bar-container"><div class="bar" data-width="15.1%"></div></div><div class="value">15.1%</div></div>
-            <div class="chart-row"><div class="label">포메라니안</div><div class="bar-container"><div class="bar" data-width="12.8%"></div></div><div class="value">12.8%</div></div>
-            <div class="chart-row"><div class="label">비숑 프리제</div><div class="bar-container"><div class="bar" data-width="7.0%"></div></div><div class="value">7.0%</div></div>
+    <!-- Panel 2: 케어 & 비만 -->
+    <div id="panel-1" class="stat-panel">
+        <div class="chart-section">
+            <div class="chart-title">반려동물 나홀로 집에 경험률 (80.1%)</div>
+            <p style="font-size: 15px; color:#555; line-height: 1.6;">
+                반려동물의 <strong>80.1%</strong>가 집에 홀로 남겨진 경험이 있으며, <br>
+                비워두는 시간은 <strong>하루 평균 5시간 54분</strong>에 달합니다.
+            </p>
+            <div class="rank-list" style="margin-top:20px;">
+                <div class="rank-label"><strong>홀로 남겨진 반려동물을 위한 대응 조치 TOP 3</strong></div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>TV/조명 켜놓고 외출</span><span>43.1%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 43.1%; background:#e67e22;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>자동급식장치 이용</span><span>35.1%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 35.1%; background:#e67e22;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>냉/난방 시설 예약</span><span>34.9%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 34.9%; background:#e67e22;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">수의사 진단 비만율 및 주요 품종 (전체 14.7% 비만)</div>
+            <div class="rank-list">
+                <div class="rank-item">
+                    <div class="rank-label"><span>반려견 1위: 요크셔테리어 비만율</span><span>29.2%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 29.2%; background:#e74c3c;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>반려묘 1위: 페르시안 비만율</span><span>70.0%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 70.0%; background:#e74c3c;"></div></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 창 3: 선호 품종 순위 (반려묘) -->
-    <div class="page" id="page-3">
-        <h1>가장 사랑받는 반려묘 품종 Top 5</h1>
-        <p class="subtitle">국내 반려묘 가구 기준 선호도 조사 (단위: %)</p>
-        <div class="chart-container">
-            <div class="chart-row"><div class="label">코리안 숏헤어</div><div class="bar-container"><div class="bar" data-width="44.7%"></div></div><div class="value">44.7%</div></div>
-            <div class="chart-row"><div class="label">러시안블루</div><div class="bar-container"><div class="bar" data-width="12.8%"></div></div><div class="value">12.8%</div></div>
-            <div class="chart-row"><div class="label">페르시안</div><div class="bar-container"><div class="bar" data-width="9.6%"></div></div><div class="value">9.6%</div></div>
-            <div class="chart-row"><div class="label">잘 모르겠다</div><div class="bar-container"><div class="bar" data-width="9.1%"></div></div><div class="value">9.1%</div></div>
-            <div class="chart-row"><div class="label">스코티쉬폴드</div><div class="bar-container"><div class="bar" data-width="7.9%"></div></div><div class="value">7.9%</div></div>
+    <!-- Panel 3: 양육비 & 자금 -->
+    <div id="panel-2" class="stat-panel">
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>월 평균 양육비</h4>
+                <div class="value">19만 4천 원</div>
+                <small style="color:#999;">2023년 대비 식비 비중 6.8%p 증가</small>
+            </div>
+            <div class="summary-card">
+                <h4>최근 2년간 치료비</h4>
+                <div class="value">146만 3천 원</div>
+                <small style="color:#999;">지출 가구 평균 금액</small>
+            </div>
+            <div class="summary-card">
+                <h4>전용자금 운용률</h4>
+                <div class="value">26.6%</div>
+                <small style="color:#999;">주 목적 1위: 병원비 (73.3%)</small>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">반려동물 치료비 지출처 TOP 3</div>
+            <div class="rank-list">
+                <div class="rank-item">
+                    <div class="rank-label"><span>1위 피부 질환 치료</span><span>46.0%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 46.0%; background:#9b59b6;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>2위 정기/장비 검진</span><span>43.9%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 43.9%; background:#9b59b6;"></div></div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-label"><span>3위 소화기 질환 치료</span><span>21.7%</span></div>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 21.7%; background:#9b59b6;"></div></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 창 4: 반려동물 건강/행복 중요 요소 -->
-    <div class="page" id="page-4">
-        <h1>반려동물 건강과 행복의 핵심 요소</h1>
-        <p class="subtitle">보호자들이 직접 꼽은 중요 항목 (단위: %, 복수응답)</p>
-        <div class="chart-container">
-            <div class="chart-row"><div class="label">보호자와의 교감</div><div class="bar-container"><div class="bar" data-width="59.8%"></div></div><div class="value">59.8%</div></div>
-            <div class="chart-row"><div class="label">정기적인 운동·놀이</div><div class="bar-container"><div class="bar" data-width="41.2%"></div></div><div class="value">41.2%</div></div>
-            <div class="chart-row"><div class="label">정신건강·스트레스</div><div class="bar-container"><div class="bar" data-width="40.3%"></div></div><div class="value">40.3%</div></div>
-            <div class="chart-row"><div class="label">균형잡힌 식단</div><div class="bar-container"><div class="bar" data-width="37.6%"></div></div><div class="value">37.6%</div></div>
-            <div class="chart-row"><div class="label">환경 관리(청결 등)</div><div class="bar-container"><div class="bar" data-width="32.7%"></div></div><div class="value">32.7%</div></div>
-        </div>
-    </div>
-
-    <!-- 하단 이동 버튼 -->
-    <div class="nav-buttons">
-        <button class="btn" id="prev-btn" disabled>이전 자료</button>
-        <button class="btn" id="next-btn">다음 자료</button>
+    <!-- 하단 출처 -->
+    <div class="source-footer">
+        출처: KB금융그룹 경영연구소 「2025 한국 반려동물 보고서」
     </div>
 </div>
 
 <script>
-    const pages = document.querySelectorAll('.page');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const currentPageNav = document.getElementById('current-page');
-    let currentIndex = 0;
+    function switchPanel(panelIndex) {
+        // 모든 탭 버튼 비활성화
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => tab.classList.remove('active'));
 
-    // 그래프 애니메이션 실행 함수
-    function animateBars(pageIndex) {
-        // 모든 바의 길이를 초기화한 뒤 해당 페이지의 바만 애니메이션 작동
-        document.querySelectorAll('.bar').forEach(bar => bar.style.width = '0');
-        const activeBars = pages[pageIndex].querySelectorAll('.bar');
-        setTimeout(() => {
-            activeBars.forEach(bar => {
-                bar.style.width = bar.getAttribute('data-width');
-            });
-        }, 100);
+        // 모든 통계 패널 숨기기
+        const panels = document.querySelectorAll('.stat-panel');
+        panels.forEach(panel => panel.classList.remove('active'));
+
+        // 클릭한 탭과 패널만 활성화
+        tabs[panelIndex].classList.add('active');
+        document.getElementById(`panel-${panelIndex}`).classList.add('active');
     }
-
-    function updatePage(index) {
-        pages.forEach((page, i) => {
-            if(i === index) {
-                page.classList.add('active');
-            } else {
-                page.classList.remove('active');
-            }
-        });
-
-        currentIndex = index;
-        currentPageNav.textContent = currentIndex + 1;
-
-        // 버튼 활성화/비활성화 처리
-        prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex === pages.length - 1;
-
-        // 그래프 애니메이션 트리거
-        animateBars(currentIndex);
-    }
-
-    prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) updatePage(currentIndex - 1);
-    });
-
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < pages.length - 1) updatePage(currentIndex + 1);
-    });
-
-    // 초기 첫 페이지 애니메이션 실행
-    window.onload = () => {
-        animateBars(0);
-    };
 </script>
 
 </body>
