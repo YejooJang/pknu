@@ -2,296 +2,567 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>반려동물 통계 대시보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <title>사회복지실무역량 및 반려동물 통계 포트폴리오</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* [기존 스타일 유지] 테마 색상 및 부드러운 스카이 블루 톤 변수 */
         :root {
-            --primary-color: #f39c12;
-            --bg-color: #f9f9f9;
-            --card-color: #ffffff;
-            --text-color: #333333;
+            --bg-gradient: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 30%, #7dd3fc 70%, #38bdf8 100%);
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --primary-blue: #0284c7;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --pet-orange: #f39c12; /* 반려동물 섹션 포인트 컬러 */
         }
 
-        .stat-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Noto Sans KR', sans-serif;
-            max-width: 1000px;
-            margin: 20px auto;
-            background-color: var(--bg-color);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
-        /* 상단 탭 메뉴 (화면 전환용) */
-        .stat-tabs {
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
             display: flex;
-            background-color: #ffffff;
-            border-bottom: 2px solid #e0e0e0;
+            flex-direction: column;
+            -webkit-text-size-adjust: none;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 15px 10px;
-            border: none;
+        /* [상단 네비게이션 바] 화면전환용 탭 메뉴로 업그레이드 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.8rem 1rem;
+            flex-wrap: wrap;
+        }
+
+        .navbar button {
             background: none;
-            font-size: 16px;
+            border: none;
+            color: #0369a1;
+            font-size: 0.9rem;
             font-weight: bold;
-            color: #666;
+            padding: 0.5rem 0.8rem;
+            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 활성화된 메뉴 탭 스타일 */
+        .navbar button.active {
+            background: #0284c7;
+            color: white;
+        }
+
+        /* 메인 헤더 영역 (프로필 및 타이틀 고정) */
+        header {
+            position: relative;
             text-align: center;
+            padding: 7.5rem 1rem 2rem 1rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(224,242,254,0.6) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            background-color: #fffdf9;
+        .profile-container {
+            width: 105px;
+            height: 105px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.15);
+            margin-bottom: 1rem;
+            background: #f1f5f9;
         }
 
-        /* 통계 화면 패널 */
-        .stat-panel {
-            display: none;
-            padding: 30px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .stat-panel.active {
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        header h1 {
+            font-size: 2.2rem;
+            color: #0369a1;
+            text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.8);
+            line-height: 1.2;
+        }
+
+        header p {
+            margin-top: 0.4rem;
+            color: #0284c7;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        /* 메인 콘텐츠 배치 영역 */
+        main {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1rem 3rem 1rem;
+            flex: 1;
+        }
+
+        /* [핵심] 화면전환을 위한 패널 숨김/나타남 구조 설정 */
+        .tab-panel {
+            display: none; /* 기본적으로 숨김 */
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            animation: fadeInPanel 0.4s ease-in-out forwards;
+        }
+
+        /* 활성화된 패널만 화면에 노출 */
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeInPanel {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 요약 카드 스타일 */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+        h2 {
+            font-size: 1.5rem;
+            color: #0369a1;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #bae6fd;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .summary-card {
-            background: var(--card-color);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #eef0f2;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        /* 기존 1. 날씨 섹션 */
+        .weather-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            padding: 1.5rem 0;
         }
 
-        .summary-card h4 { margin: 0 0 10px 0; color: #777; font-size: 14px; }
-        .summary-card .value { font-size: 24px; font-weight: bold; color: var(--primary-color); }
-
-        /* 그래픽 요소를 위한 구조 */
-        .chart-section {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #eef0f2;
+        .weather-icon {
+            font-size: 4.5rem;
+            color: #0284c7;
         }
 
-        .chart-title {
-            font-size: 18px;
+        .weather-info {
+            font-size: 1.2rem;
+        }
+
+        .weather-info .temp {
+            font-size: 3rem;
             font-weight: bold;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            border-left: 4px solid var(--primary-color);
-            padding-left: 10px;
+            line-height: 1;
+            margin-bottom: 0.3rem;
         }
 
-        /* 순위 목록형 바 차트 */
-        .rank-list { margin-top: 15px; }
-        .rank-item { margin-bottom: 15px; }
-        .rank-label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
-        .rank-bar-bg { background: #eee; height: 12px; border-radius: 6px; overflow: hidden; }
-        .rank-bar { background: var(--primary-color); height: 100%; border-radius: 6px; transition: width 1s ease-in-out; }
-        .rank-bar.cat { background: #3498db; }
+        /* 기존 2, 3. 리스트 스타일 */
+        .news-list { list-style: none; }
+        .news-item {
+            padding: 1.2rem 0;
+            border-bottom: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-item a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .news-item a:hover { color: var(--primary-blue); }
+        .news-date { color: var(--text-muted); font-size: 0.9rem; white-space: nowrap; }
 
-        /* 안내 문구 */
-        .source-footer {
-            text-align: right;
-            font-size: 12px;
-            color: #999;
-            padding: 15px 30px;
-            background: #f1f1f1;
+        /* 기존 4 & 신규 통계 그리드 공통 구조 */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 1rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .stat-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: bold; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: #0369a1; }
+        .stat-card small { display: block; margin-top: 0.4rem; color: #78889b; font-size: 0.78rem; }
+
+        /* 신규 추가: 반려동물 그래프(바 차트) 레이아웃 */
+        .chart-box {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-top: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .chart-box-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #0369a1;
+            border-left: 4px solid var(--primary-blue);
+            padding-left: 8px;
+        }
+        .bar-item { margin-bottom: 1rem; }
+        .bar-item:last-child { margin-bottom: 0; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.3rem; font-weight: 500; }
+        .bar-bg { background: #e2e8f0; height: 14px; border-radius: 7px; overflow: hidden; }
+        .bar-fill { background: linear-gradient(90deg, #38bdf8, #0284c7); height: 100%; border-radius: 7px; width: 0%; transition: width 0.8rem ease-out; }
+        .bar-fill.orange { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .bar-fill.purple { background: linear-gradient(90deg, #c084fc, #a855f7); }
+
+        /* 기존 5. 랜덤 고양이 사진 프레임 */
+        .cat-container { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .cat-img-wrapper {
+            width: 100%; max-width: 500px; height: 320px;
+            border-radius: 15px; overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+        }
+        .cat-img { width: 100%; height: 100%; object-fit: cover; }
+        .cat-btn {
+            background: #0284c7; color: white; border: none; padding: 0.75rem 1.8rem;
+            border-radius: 25px; font-size: 1rem; font-weight: bold; cursor: pointer;
+            transition: background 0.2s; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.25);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cat-btn:hover { background: #0369a1; }
+
+        .source-footer { margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted); text-align: right; line-height: 1.4; }
+
+        footer {
+            text-align: center; padding: 2rem; font-size: 0.85rem; color: #64748b;
+            background: rgba(255, 255, 255, 0.6); border-top: 1px solid #e2e8f0; font-weight: 500;
+        }
+
+        /* 📱 모바일 디바이스 맞춤 반응형 설정 */
+        @media (max-width: 768px) {
+            .navbar { padding: 0.5rem; gap: 4px; }
+            .navbar button { font-size: 0.78rem; padding: 0.4rem 0.55rem; border-radius: 12px; }
+            header { padding: 9.5rem 1rem 1.5rem 1rem; }
+            header h1 { font-size: 1.7rem; }
+            .profile-container { width: 90px; height: 90px; border-width: 3px; }
+            .tab-panel { padding: 1.5rem 1.1rem; }
+            h2 { font-size: 1.2rem; margin-bottom: 1.1rem; }
+            .weather-container { flex-direction: column; gap: 1rem; text-align: center; }
+            .weather-icon { font-size: 3.5rem; }
+            .weather-info .temp { font-size: 2.3rem; }
+            .news-item { flex-direction: column; align-items: flex-start; gap: 4px; padding: 1rem 0; }
+            .news-date { margin-top: 0.2rem; font-size: 0.8rem; }
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+            .stat-value { font-size: 1.5rem; }
+            .cat-img-wrapper { height: 230px; }
+            .source-footer { text-align: left; }
+        }
+
+        @media (max-width: 360px) {
+            .navbar button { font-size: 0.7rem; padding: 0.3rem 0.4rem; }
+            .stat-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="stat-container">
-    <!-- 화면 전환 탭 버튼 -->
-    <div class="stat-tabs">
-        <button class="tab-btn active" onclick="switchPanel(0)">🐾 양육 및 선호현황</button>
-        <button class="tab-btn" onclick="switchPanel(1)">⏰ 케어 & 비만</button>
-        <button class="tab-btn" onclick="switchPanel(2)">💰 양육비 & 자금</button>
+    <div class="navbar">
+        <button class="nav-btn active" onclick="changeTab(0)">종합 뉴스피드</button>
+        <button class="nav-btn" onclick="changeTab(1)">사회복지 지표</button>
+        <button class="nav-btn" onclick="changeTab(2)" id="pet-tab-btn">🐾 반려동물 현황</button>
+        <button class="nav-btn" onclick="changeTab(3)">힐링 야옹이</button>
     </div>
 
-    <!-- Panel 1: 양육 및 선호현황 -->
-    <div id="panel-0" class="stat-panel active">
-        <div class="summary-grid">
-            <div class="summary-card">
-                <h4>반려가구 수</h4>
-                <div class="value">591만 가구</div>
+    <header>
+        <div class="profile-container">
+            <img src="증명사진.png" class="profile-img" alt="프로필 증명사진">
+        </div>
+        <h1>사회복지실무역량</h1>
+        <p>종합 정보 포트폴리오 대시보드</p>
+    </header>
+
+    <main>
+        <div id="tab-panel-0" class="tab-panel active">
+            <h2><i class="fa-solid fa-cloud-sun-rain"></i> 부산광역시 남구 대연동 날씨</h2>
+            <div class="weather-container">
+                <div class="weather-icon"><i class="fa-solid fa-cloud-sun"></i></div>
+                <div class="weather-info">
+                    <div class="temp">21°C</div>
+                    <div>상태: 맑음 뒤 구름 조금 (실시간 연동 대기)</div>
+                    <div>습도: 55% | 풍속: 2.4m/s</div>
+                </div>
             </div>
-            <div class="summary-card">
-                <h4>반려인 수</h4>
-                <div class="value">1,546만 명</div>
-            </div>
-            <div class="summary-card">
-                <h4>반려견 수</h4>
-                <div class="value">546만 마리</div>
-            </div>
-            <div class="summary-card">
-                <h4>반려묘 수</h4>
-                <div class="value">217만 마리</div>
-            </div>
+            <div class="source-footer">출처: 기상청 단기예보 Open API 기준</div>
+
+            <br><br>
+            <h2><i class="fa-solid fa-map-location-dot"></i> 부산 지역 주요 이슈</h2>
+            <ul class="news-list">
+                <li class="news-item">
+                    <a href="https://www.busan.go.kr" target="_blank">부산시, 2026년 지역사회 통합돌봄(Community Care) 확대망 구축 선언</a>
+                    <span class="news-date">2026-05-28</span>
+                </li>
+                <li class="news-item">
+                    <a href="https://www.busan.go.kr" target="_blank">부산형 고령친화도시 'Aging in Place' 조성을 위한 인프라 확충 정책 발표</a>
+                    <span class="news-date">2026-05-15</span>
+                </li>
+                <li class="news-item">
+                    <a href="https://www.busan.go.kr" target="_blank">시민 안전 중심 교통망 혁신 및 구군별 복지 사각지대 발굴 시스템 강화</a>
+                    <span class="news-date">2026-04-30</span>
+                </li>
+            </ul>
+
+            <br><br>
+            <h2><i class="fa-solid fa-graduation-cap"></i> 국립부경대학교 주요 소식</h2>
+            <ul class="news-list">
+                <li class="news-item">
+                    <a href="https://www.pknu.ac.kr" target="_blank">국립부경대, 지역사회 상생을 위한 사회 welfare 글로컬 봉사단 발대식 개최</a>
+                    <span class="news-date">2026-05-22</span>
+                </li>
+                <li class="news-item">
+                    <a href="https://www.pknu.ac.kr" target="_blank">2026학년도 하반기 해외 자매대학 파견 교환학생 모집 및 설명회 성료</a>
+                    <span class="news-date">2026-05-10</span>
+                </li>
+                <li class="news-item">
+                    <a href="https://www.pknu.ac.kr" target="_blank">사회과학대학 학술 심포지엄: 현대 사회정책 변화와 실무 역량 강화 방안</a>
+                    <span class="news-date">2026-04-18</span>
+                </li>
+            </ul>
         </div>
 
-        <div class="chart-section">
-            <div class="chart-title">가장 많이 기르는 반려견 품종 (%)</div>
-            <div class="rank-list">
-                <div class="rank-item">
-                    <div class="rank-label"><span>1위 몰티즈</span><span>20.4%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 20.4%;"></div></div>
+        <div id="tab-panel-1" class="tab-panel">
+            <h2><i class="fa-solid fa-chart-bar"></i> 핵심 사회복지 통계 지표</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">부산 고령인구 비율</div>
+                    <div class="stat-value">23.4%</div>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>2위 푸들</span><span>18.9%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 18.9%;"></div></div>
+                <div class="stat-card">
+                    <div class="stat-label">사회복지 예산 비중</div>
+                    <div class="stat-value">36.2%</div>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>3위 믹스견</span><span>15.1%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 15.1%;"></div></div>
+                <div class="stat-card">
+                    <div class="stat-label">통합돌봄 만족도</div>
+                    <div class="stat-value">87.5%</div>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>4위 포메라니안</span><span>12.8%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 12.8%;"></div></div>
+                <div class="stat-card">
+                    <div class="stat-label">상병수당 참여 목표</div>
+                    <div class="stat-value">72.0%</div>
                 </div>
             </div>
+            <div class="source-footer">출처: 통계청 국가통계포털(KOSIS) 및 보건복지부 참조</div>
         </div>
 
-        <div class="chart-section">
-            <div class="chart-title">가장 많이 기르는 반려묘 품종 (%)</div>
-            <div class="rank-list">
-                <div class="rank-item">
-                    <div class="rank-label"><span>1위 코리안 숏헤어</span><span>44.7%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 44.7%;"></div></div>
+        <div id="tab-panel-2" class="tab-panel">
+            <h2><i class="fa-solid fa-paw"></i> 2025 한국 반려동물 보고서 통계</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card" style="border-top: 4px solid var(--pet-orange);">
+                    <div class="stat-label">국내 반려가구 수</div>
+                    <div class="stat-value" style="color:var(--pet-orange)">591만</div>
+                    <small>전체 가구의 25.7% 수준</small>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>2위 러시안블루</span><span>12.8%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 12.8%;"></div></div>
+                <div class="stat-card" style="border-top: 4px solid var(--pet-orange);">
+                    <div class="stat-label">총 양육 인구수</div>
+                    <div class="stat-value" style="color:var(--pet-orange)">1,546만</div>
+                    <small>대한민국 국민 약 4명 중 1명</small>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>3위 페르시안</span><span>9.6%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 9.6%;"></div></div>
+                <div class="stat-card" style="border-top: 4px solid var(--pet-orange);">
+                    <div class="stat-label">총 반려견 수</div>
+                    <div class="stat-value" style="color:var(--pet-orange)">546만</div>
+                    <small>가구당 평균 1.2마리 양육</small>
+                </div>
+                <div class="stat-card" style="border-top: 4px solid var(--pet-orange);">
+                    <div class="stat-label">총 반려묘 수</div>
+                    <div class="stat-value" style="color:var(--pet-orange)">217만</div>
+                    <small>지속적인 증가 추세 기록</small>
                 </div>
             </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">월평균 고정 양육비</div>
+                    <div class="stat-value" style="font-size: 1.8rem; color:#0f172a;">19만 4천원</div>
+                    <small>23년 대비 식비 비중 6.8%p 증가</small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">2년간 평균 치료비</div>
+                    <div class="stat-value" style="font-size: 1.8rem; color:#0f172a;">146만 3천원</div>
+                    <small>치료비 지출 가구 기준 평균치</small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">나홀로 집 이용률 및 시간</div>
+                    <div class="stat-value" style="font-size: 1.8rem; color:#e11d48;">80.1%</div>
+                    <small>하루 평균 5시간 54분 홀로 방치</small>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-box-title">가장 많이 기르는 반려견 품종 Top 4 (%)</div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>1위 몰티즈</span><span>20.4%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" data-width="20.4%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>2위 푸들</span><span>18.9%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" data-width="18.9%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>3위 믹스견</span><span>15.1%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" data-width="15.1%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>4위 포메라니안</span><span>12.8%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" data-width="12.8%"></div></div>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-box-title">치료비 지출 사유 주요 순위 TOP 3 (%)</div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>1위 피부 질환 치료</span><span>46.0%</span></div>
+                    <div class="bar-bg"><div class="bar-fill orange" data-width="46.0%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>2위 정기 및 장비 검진</span><span>43.9%</span></div>
+                    <div class="bar-bg"><div class="bar-fill orange" data-width="43.9%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>3위 소화기 질환 치료</span><span>21.7%</span></div>
+                    <div class="bar-bg"><div class="bar-fill orange" data-width="21.7%"></div></div>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-box-title">[이슈 지표] 수의사 진단 기준 주요 품종별 비만율 (%)</div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>반려묘 1위: 페르시안 고양이 비만율</span><span>70.0%</span></div>
+                    <div class="bar-bg"><div class="bar-fill purple" data-width="70.0%"></div></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label"><span>반려견 1위: 요크셔테리어 강아지 비만율</span><span>29.2%</span></div>
+                    <div class="bar-bg"><div class="bar-fill purple" data-width="29.2%"></div></div>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.8rem; line-height:1.4;">
+                    * 비만 상태인 반려동물 가구는 일반 가구에 비해 매월 고정 양육비는 1.6배, 종합 병원 의료비는 2.3배 더 높게 지출하는 양상을 보였습니다.
+                </p>
+            </div>
+            
+            <div class="source-footer">출처: KB금융그룹 경영연구소 「2025 한국 반려동물 보고서」 공식 데이터 기준</div>
         </div>
-    </div>
 
-    <!-- Panel 2: 케어 & 비만 -->
-    <div id="panel-1" class="stat-panel">
-        <div class="chart-section">
-            <div class="chart-title">반려동물 나홀로 집에 경험률 (80.1%)</div>
-            <p style="font-size: 15px; color:#555; line-height: 1.6;">
-                반려동물의 <strong>80.1%</strong>가 집에 홀로 남겨진 경험이 있으며, <br>
-                비워두는 시간은 <strong>하루 평균 5시간 54분</strong>에 달합니다.
-            </p>
-            <div class="rank-list" style="margin-top:20px;">
-                <div class="rank-label"><strong>홀로 남겨진 반려동물을 위한 대응 조치 TOP 3</strong></div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>TV/조명 켜놓고 외출</span><span>43.1%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 43.1%; background:#e67e22;"></div></div>
+        <div id="tab-panel-3" class="tab-panel">
+            <h2><i class="fa-solid fa-cat"></i> 오늘의 힐링 랜덤 고양이</h2>
+            <div class="cat-container">
+                <div class="cat-img-wrapper" id="cat-box">
+                    <i class="fa-solid fa-paw" style="font-size: 3rem; color: #cbd5e1;"></i>
                 </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>자동급식장치 이용</span><span>35.1%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 35.1%; background:#e67e22;"></div></div>
-                </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>냉/난방 시설 예약</span><span>34.9%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 34.9%; background:#e67e22;"></div></div>
-                </div>
+                <button class="cat-btn" onclick="fetchCat()">새로운 야옹이 불러오기 🐾</button>
             </div>
+            <div class="source-footer">출처: The Cat API (무료 오픈 미디어 시스템 인터페이스)</div>
         </div>
+    </main>
 
-        <div class="chart-section">
-            <div class="chart-title">수의사 진단 비만율 및 주요 품종 (전체 14.7% 비만)</div>
-            <div class="rank-list">
-                <div class="rank-item">
-                    <div class="rank-label"><span>반려견 1위: 요크셔테리어 비만율</span><span>29.2%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 29.2%; background:#e74c3c;"></div></div>
-                </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>반려묘 1위: 페르시안 비만율</span><span>70.0%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar cat" style="width: 70.0%; background:#e74c3c;"></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <footer>
+        <p>© 2026 사회복지실무역량 강화 프로젝트. All Rights Reserved.</p>
+    </footer>
 
-    <!-- Panel 3: 양육비 & 자금 -->
-    <div id="panel-2" class="stat-panel">
-        <div class="summary-grid">
-            <div class="summary-card">
-                <h4>월 평균 양육비</h4>
-                <div class="value">19만 4천 원</div>
-                <small style="color:#999;">2023년 대비 식비 비중 6.8%p 증가</small>
-            </div>
-            <div class="summary-card">
-                <h4>최근 2년간 치료비</h4>
-                <div class="value">146만 3천 원</div>
-                <small style="color:#999;">지출 가구 평균 금액</small>
-            </div>
-            <div class="summary-card">
-                <h4>전용자금 운용률</h4>
-                <div class="value">26.6%</div>
-                <small style="color:#999;">주 목적 1위: 병원비 (73.3%)</small>
-            </div>
-        </div>
+    <script>
+        // 1. 화면 전환(탭 변경) 메인 제어 함수
+        function changeTab(panelIndex) {
+            // 상단 버튼들의 활성화(active) 클래스 초기화 및 재설정
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons[panelIndex].classList.add('active');
 
-        <div class="chart-section">
-            <div class="chart-title">반려동물 치료비 지출처 TOP 3</div>
-            <div class="rank-list">
-                <div class="rank-item">
-                    <div class="rank-label"><span>1위 피부 질환 치료</span><span>46.0%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 46.0%; background:#9b59b6;"></div></div>
-                </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>2위 정기/장비 검진</span><span>43.9%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 43.9%; background:#9b59b6;"></div></div>
-                </div>
-                <div class="rank-item">
-                    <div class="rank-label"><span>3위 소화기 질환 치료</span><span>21.7%</span></div>
-                    <div class="rank-bar-bg"><div class="rank-bar" style="width: 21.7%; background:#9b59b6;"></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
+            // 하단 본문 모든 패널 감추고 선택한 번호만 활성화
+            const panels = document.querySelectorAll('.tab-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+            panels[panelIndex].classList.add('active');
 
-    <!-- 하단 출처 -->
-    <div class="source-footer">
-        출처: KB금융그룹 경영연구소 「2025 한국 반려동물 보고서」
-    </div>
-</div>
+            // 반려동물 탭이 열릴 때 그래프 바 애니메이션이 차오르도록 구동
+            if (panelIndex === 2) {
+                setTimeout(animateGraphs, 150);
+            } else {
+                resetGraphs();
+            }
+        }
 
-<script>
-    function switchPanel(panelIndex) {
-        // 모든 탭 버튼 비활성화
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => tab.classList.remove('active'));
+        // 2. 반려동물 전용 그래프 바 애니메이션 구동 함수
+        function animateGraphs() {
+            const fills = document.querySelectorAll('.bar-fill');
+            fills.forEach(fill => {
+                const targetWidth = fill.getAttribute('data-width');
+                fill.style.width = targetWidth;
+            });
+        }
 
-        // 모든 통계 패널 숨기기
-        const panels = document.querySelectorAll('.stat-panel');
-        panels.forEach(panel => panel.classList.remove('active'));
+        // 3. 다른 탭 이동 시 그래프 너비 초기화 함수 (재점등 연출 효과)
+        function resetGraphs() {
+            const fills = document.querySelectorAll('.bar-fill');
+            fills.forEach(fill => {
+                fill.style.width = '0%';
+            });
+        }
 
-        // 클릭한 탭과 패널만 활성화
-        tabs[panelIndex].classList.add('active');
-        document.getElementById(`panel-${panelIndex}`).classList.add('active');
-    }
-</script>
+        // 4. 기존 기능 유지: 랜덤 고양이 사진 가져오기 API 함수
+        async function fetchCat() {
+            const catBox = document.getElementById('cat-box');
+            catBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; color: #0284c7;"></i>`;
+            
+            try {
+                const response = await fetch('https://api.thecatapi.com/v1/images/search');
+                if (!response.ok) throw new Error('데이터 처리 지연');
+                
+                const data = await response.json();
+                const imgUrl = data[0].url;
+                
+                catBox.innerHTML = `<img src="${imgUrl}" class="cat-img" alt="귀여운 고양이 사진">`;
+            } catch (error) {
+                catBox.innerHTML = `
+                    <div style="text-align: center; padding: 1.5rem; color: #64748b;">
+                        <i class="fa-solid fa-circle-exclamation" style="font-size: 2.2rem; margin-bottom: 0.6rem; color:#f43f5e; display:block;"></i>
+                        <p style="font-weight: bold;">고양이를 불러오지 못했습니다.</p>
+                    </div>`;
+            }
+        }
 
+        // 초기 페이지 첫 로딩 시 실행될 함수 설정
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchCat();
+        });
+    </script>
 </body>
 </html>
