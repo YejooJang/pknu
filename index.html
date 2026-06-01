@@ -7,15 +7,15 @@
     <!-- 아이콘 표시용 FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* "image_0a5b2c.png" 모티브 - 너무 쨍하지 않고 화사한 파스텔 하늘색 베이스 */
+        /* 원래의 산뜻하고 플랫한 파스텔 하늘색 테마 레시피 */
         :root {
-            --bg-main: #bce3ff;       /* 부드럽고 화사하게 펼쳐지는 연한 파스텔 하늘색 */
-            --card-bg: #ffffff;       /* 뭉게구름처럼 깨끗하고 포근한 순백색 */
-            --main-blue: #69beff;     /* 중간 톤의 맑은 스카이 블루 */
-            --point-blue: #0082db;    /* 맑은 하늘색 배경 위에서 가독성을 책임지는 선명한 블루 */
-            --text-dark: #0f2435;      /* 눈 피로도를 낮춰주는 다크 네이비 텍스트 */
-            --text-muted: #527088;     /* 은은한 분위기의 블루 그레이 */
-            --bar-bg: #e3f3ff;         /* 차트 등에 쓰일 맑은 물빛 틴트 컬러 */
+            --bg-main: #addfff;       
+            --card-bg: #ffffff;       
+            --main-blue: #5cb8ff;     
+            --point-blue: #007bd1;    
+            --text-dark: #0a1b29;      
+            --text-muted: #587185;     
+            --bar-bg: #e6f4ff;         
         }
 
         * {
@@ -32,7 +32,97 @@
             display: flex;
             flex-direction: column;
             -webkit-text-size-adjust: none;
+            position: relative;
+            overflow-x: hidden;
         }
+
+        /* 🎈 공통 풍선 스타일 */
+        .balloon {
+            position: relative;
+            width: 54px;
+            height: 65px;
+            background: var(--card-bg);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.03);
+        }
+        .balloon::after {
+            content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+            border-left: 4px solid transparent; border-right: 4px solid transparent;
+            border-bottom: 6px solid var(--card-bg);
+        }
+        .balloon-string {
+            position: absolute; top: 64px; left: 50%;
+            width: 2px; height: 120px;
+            background: rgba(255, 255, 255, 0.6);
+            transform-origin: top center;
+            transform: rotate(0deg); /* 기본 줄을 수직으로 정렬 */
+        }
+
+        /* 👉 오른쪽 풍선 그룹 */
+        .balloon-group {
+            position: absolute;
+            top: 290px;        
+            right: 12%;        
+            z-index: 9999;     
+            pointer-events: none;
+            animation: floatBalloonRight 6s ease-in-out infinite alternate;
+        }
+        .balloon-2 {
+            position: absolute;
+            top: 35px;
+            left: 28px;
+            transform: scale(0.88); /* 과도한 회전을 제거하여 삐뚤어짐 방지 */
+        }
+
+        /* 👈 왼쪽 풍선 그룹 (image_00481e.png 삐뚤어짐 현상 교정) */
+        .balloon-left-group {
+            position: absolute;
+            top: 620px;        
+            left: 11%;         
+            z-index: 9999;     
+            pointer-events: none;
+            animation: floatBalloonLeft 6.5s ease-in-out infinite alternate;
+        }
+        .balloon-left-2 {
+            position: absolute;
+            top: -35px;
+            left: -26px;
+            transform: scale(0.85); /* 🌟 불필요하게 꺾여있던 rotate(-12deg)를 지워 곧게 정렬 */
+        }
+
+        /* 풍선 고르게 둥둥 떠다니는 애니메이션 */
+        @keyframes floatBalloonRight {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-15px) rotate(1deg); }
+        }
+        @keyframes floatBalloonLeft {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-18px) rotate(-1deg); }
+        }
+
+        /* ☁️ 하단 고정 구름 일러스트 프레임 */
+        .cloud-bottom-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            z-index: 1;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .flat-cloud {
+            background: var(--card-bg);
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            bottom: 0;
+        }
+        .fc-1 { width: 340px; height: 130px; left: -60px; }
+        .fc-2 { width: 280px; height: 105px; left: 160px; opacity: 0.95; }
+        .fc-3 { width: 400px; height: 145px; right: 180px; }
+        .fc-4 { width: 320px; height: 115px; right: -50px; }
 
         /* 최상단 헤더 프로필 영역 */
         header {
@@ -43,6 +133,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 10;
         }
 
         .profile-container {
@@ -51,7 +142,7 @@
             border-radius: 50%;
             overflow: hidden;
             border: 4px solid var(--card-bg);
-            box-shadow: 0 8px 24px rgba(15, 36, 53, 0.12);
+            box-shadow: 0 6px 20px rgba(10, 27, 41, 0.08);
             margin-bottom: 1.2rem;
             background: #ffffff;
         }
@@ -64,21 +155,20 @@
         }
 
         header h1 {
-            font-size: 2.3rem;
-            color: var(--text-dark); /* 전체 배경이 연해졌으므로 텍스트 가독성을 위해 다크 톤 배치 */
+            font-size: 2.2rem;
+            color: var(--text-dark);
             line-height: 1.2;
             font-weight: 800;
             letter-spacing: -0.5px;
         }
 
-        /* 메뉴바: 스크롤 시 부드러운 파스텔 하늘색과 투명하게 오버랩되는 상단 고정 바 */
+        /* 메뉴바: 상단 고정 내비게이션 */
         .navbar {
             position: sticky;
             top: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to bottom, rgba(188, 227, 255, 0.98) 0%, rgba(188, 227, 255, 0.92) 80%, rgba(188, 227, 255, 0) 100%);
-            border-bottom: none;
+            background: linear-gradient(to bottom, rgba(173, 223, 255, 0.98) 0%, rgba(173, 223, 255, 0.92) 80%, rgba(173, 223, 255, 0) 100%);
             z-index: 1000;
             display: flex;
             justify-content: center;
@@ -87,38 +177,38 @@
             flex-wrap: wrap;
         }
 
-        /* 버튼 스타일 (하늘 위의 보들보들한 구름 모양) */
         .navbar button {
             background: var(--card-bg);
-            border: 2px solid transparent;
+            border: none;
             color: var(--point-blue);
             font-size: 0.95rem;
             font-weight: bold;
-            padding: 0.6rem 1.2rem;
-            border-radius: 24px;
+            padding: 0.65rem 1.25rem;
+            border-radius: 30px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 4px 12px rgba(15, 36, 53, 0.08);
+            box-shadow: 0 4px 10px rgba(10, 27, 41, 0.05);
             -webkit-tap-highlight-color: transparent;
         }
 
         .navbar button.active {
             background: var(--point-blue);
             color: var(--card-bg);
-            box-shadow: 0 6px 14px rgba(0, 130, 219, 0.25);
+            box-shadow: 0 5px 12px rgba(0, 123, 209, 0.2);
         }
 
         /* 메인 콘텐츠 영역 */
         main {
-            max-width: 900px;
+            max-width: 860px;
             width: 100%;
             margin: 0 auto;
-            padding: 0rem 1rem 4rem 1rem;
+            padding: 0rem 1rem 6rem 1rem;
             flex: 1;
             position: relative;
+            z-index: 10;
         }
 
         .dashboard-wrapper {
@@ -126,16 +216,15 @@
             width: 100%;
         }
 
-        /* 뭉게구름 사각 패널 */
+        /* 정갈한 화이트 라운드 패널 */
         .tab-panel {
             display: none;
             background: var(--card-bg);
-            border-radius: 30px;
-            padding: 2.8rem;
-            box-shadow: 0 10px 30px rgba(15, 36, 53, 0.08);
+            border-radius: 28px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(10, 27, 41, 0.06);
             position: relative;
-            z-index: 5;
-            animation: fadeInPanel 0.35s ease-out forwards;
+            animation: fadeInPanel 0.3s ease-out forwards;
         }
 
         .tab-panel.active {
@@ -143,52 +232,52 @@
         }
 
         @keyframes fadeInPanel {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             color: var(--point-blue);
-            margin-bottom: 1.6rem;
-            border-bottom: 2px dashed #d2edff;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e1f2ff;
             padding-bottom: 0.6rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* 날씨 섹션 */
+        /* 날씨 구성 */
         .weather-container {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 3rem;
-            padding: 1.5rem 0;
+            padding: 1.2rem 0;
         }
 
         .weather-icon {
-            font-size: 4.8rem;
+            font-size: 4.5rem;
             color: var(--main-blue);
         }
 
         .weather-info {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
 
         .weather-info .temp {
-            font-size: 3.2rem;
+            font-size: 3rem;
             font-weight: 800;
             color: var(--point-blue);
             line-height: 1;
             margin-bottom: 0.4rem;
         }
 
-        /* 리스트 스타일 */
+        /* 뉴스/이슈 리스트 */
         .news-list { list-style: none; }
         .news-item {
-            padding: 1.3rem 0;
-            border-bottom: 1px dashed #e6f4ff;
+            padding: 1.2rem 0;
+            border-bottom: 1px solid #f0f7fc;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -205,36 +294,36 @@
         .news-item a:hover { color: var(--point-blue); }
         .news-date { color: var(--text-muted); font-size: 0.9rem; white-space: nowrap; }
 
-        /* 통계 지표 그리드 */
+        /* 대시보드 지표 그리드 */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.3rem;
+            gap: 1.2rem;
             margin-bottom: 1.5rem;
         }
 
         .stat-card {
-            background: #f4faff;
-            padding: 1.6rem 1rem;
-            border-radius: 20px;
+            background: #f7fbfd;
+            padding: 1.5rem 1rem;
+            border-radius: 18px;
             text-align: center;
-            border: 1px solid #e1f1ff;
+            border: 1px solid #e6f2fa;
         }
 
-        .stat-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: bold; }
-        .stat-value { font-size: 1.9rem; font-weight: 800; color: var(--point-blue); }
-        .stat-card small { display: block; margin-top: 0.4rem; color: var(--text-muted); font-size: 0.78rem; }
+        .stat-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: bold; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--point-blue); }
+        .stat-card small { display: block; margin-top: 0.3rem; color: var(--text-muted); font-size: 0.78rem; }
 
-        /* 부드러운 스카이 그라데이션 차트 */
+        /* 정교한 미니멀 차트 박스 */
         .chart-box {
-            background: #f4faff;
-            padding: 1.6rem;
-            border-radius: 20px;
-            margin-top: 1.3rem;
-            border: 1px solid #e1f1ff;
+            background: #f7fbfd;
+            padding: 1.5rem;
+            border-radius: 18px;
+            margin-top: 1.2rem;
+            border: 1px solid #e6f2fa;
         }
         .chart-box-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
             margin-bottom: 1rem;
             color: var(--point-blue);
@@ -243,64 +332,112 @@
         }
         .bar-item { margin-bottom: 1rem; }
         .bar-item:last-child { margin-bottom: 0; }
-        .bar-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.3rem; font-weight: bold; color: var(--text-dark); }
-        .bar-bg { background: var(--bar-bg); height: 14px; border-radius: 7px; overflow: hidden; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; font-weight: bold; color: var(--text-dark); }
+        .bar-bg { background: var(--bar-bg); height: 12px; border-radius: 6px; overflow: hidden; }
         
-        .bar-fill { background: linear-gradient(90deg, #a3d7ff, var(--main-blue)); height: 100%; border-radius: 7px; width: 0%; transition: width 0.8s ease-out; }
-        .bar-fill.accent { background: linear-gradient(90deg, var(--main-blue), var(--point-blue)); }
+        .bar-fill { background: var(--main-blue); height: 100%; border-radius: 6px; width: 0%; transition: width 0.7s ease-out; }
+        .bar-fill.accent { background: var(--point-blue); }
 
-        /* 고양이 포토존 프레임 */
+        /* 미니멀 고양이 포토 쉘터 */
         .cat-container { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
         .cat-img-wrapper {
-            width: 100%; max-width: 500px; height: 320px;
-            border-radius: 24px; overflow: hidden;
-            border: 2px solid var(--bar-bg);
+            width: 100%; max-width: 480px; height: 310px;
+            border-radius: 20px; overflow: hidden;
+            border: 1px solid #e6f2fa;
             background: #ffffff; display: flex; align-items: center; justify-content: center;
         }
         .cat-img { width: 100%; height: 100%; object-fit: cover; }
         .cat-btn {
-            background: var(--point-blue); color: white; border: none; padding: 0.8rem 2.2rem;
-            border-radius: 25px; font-size: 1rem; font-weight: bold; cursor: pointer;
-            transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(0, 130, 219, 0.2);
+            background: var(--point-blue); color: white; border: none; padding: 0.75rem 2.2rem;
+            border-radius: 25px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 123, 209, 0.15);
             -webkit-tap-highlight-color: transparent;
         }
-        .cat-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .cat-btn:hover { opacity: 0.95; }
 
         .source-footer { margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted); text-align: right; line-height: 1.4; }
 
         footer {
             text-align: center; padding: 2.5rem; font-size: 0.85rem; color: var(--text-muted);
-            background: rgba(15, 36, 53, 0.04); font-weight: bold;
+            background: rgba(10, 27, 41, 0.03); font-weight: bold; z-index: 10; position: relative;
         }
 
-        /* 모바일 최적화 레이아웃 */
+        /* 모바일 스마트폰 전용 뷰포트 최적화 */
+        @media (max-width: 1024px) {
+            .balloon-group { right: 3%; transform: scale(0.75); }
+            .balloon-left-group { left: 2%; transform: scale(0.75); }
+        }
+
         @media (max-width: 768px) {
+            .balloon-group { top: 210px; right: 4%; transform: scale(0.6); }
+            .balloon-left-group { top: 560px; left: 3%; transform: scale(0.55); }
+            
+            .cloud-bottom-container { height: 95px; }
+            .fc-1 { width: 220px; height: 85px; left: -40px; }
+            .fc-2 { width: 170px; height: 70px; left: 110px; }
+            .fc-3 { width: 260px; height: 95px; right: 80px; }
+            .fc-4 { width: 190px; height: 75px; right: -30px; }
+
             header { padding: 3.5rem 1rem 1rem 1rem; }
-            header h1 { font-size: 1.8rem; }
+            header h1 { font-size: 1.75rem; }
             .profile-container { width: 90px; height: 90px; border-width: 3px; }
 
             .navbar { padding: 0.6rem 0.5rem 1.8rem 0.5rem; gap: 6px; }
-            .navbar button { font-size: 0.82rem; padding: 0.5rem 0.8rem; border-radius: 18px; }
+            .navbar button { font-size: 0.82rem; padding: 0.5rem 0.8rem; border-radius: 20px; }
 
-            .tab-panel { padding: 1.8rem 1.2rem; border-radius: 24px; }
-            h2 { font-size: 1.2rem; margin-bottom: 1.2rem; }
-            .weather-container { flex-direction: column; gap: 1rem; text-align: center; }
-            .weather-icon { font-size: 3.8rem; }
-            .weather-info .temp { font-size: 2.5rem; }
-            .news-item { flex-direction: column; align-items: flex-start; gap: 4px; padding: 1rem 0; }
-            .news-date { margin-top: 0.2rem; font-size: 0.8rem; }
-            .stat-value { font-size: 1.5rem; }
-            .cat-img-wrapper { height: 230px; }
+            .tab-panel { padding: 1.8rem 1.1rem; border-radius: 22px; }
+            h2 { font-size: 1.15rem; margin-bottom: 1.2rem; }
+            .weather-container { flex-direction: column; gap: 0.8rem; text-align: center; }
+            .weather-icon { font-size: 3.5rem; }
+            .weather-info .temp { font-size: 2.4rem; }
+            .news-item { flex-direction: column; align-items: flex-start; gap: 3px; padding: 1rem 0; }
+            .news-date { margin-top: 0.1rem; font-size: 0.8rem; }
+            .stat-value { font-size: 1.45rem; }
+            .cat-img-wrapper { height: 220px; }
             .source-footer { text-align: left; }
         }
 
+        @media (max-width: 480px) {
+            .balloon-left-group { display: none; } 
+            .balloon-group { transform: scale(0.55); top: 190px; right: 2%; }
+        }
+
         @media (max-width: 360px) {
-            .navbar button { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+            .navbar button { font-size: 0.75rem; padding: 0.4rem 0.55rem; }
             .stat-grid { grid-template-columns: 1fr; }
+            .balloon-group { display: none; } 
         }
     </style>
 </head>
 <body>
+
+    <!-- ☁️ 하단 구름 일러스트 구조 -->
+    <div class="cloud-bottom-container">
+        <div class="flat-cloud fc-1"></div>
+        <div class="flat-cloud fc-2"></div>
+        <div class="flat-cloud fc-3"></div>
+        <div class="flat-cloud fc-4"></div>
+    </div>
+
+    <!-- 🎈 오른쪽 풍선 그룹 (곧게 교정됨) -->
+    <div class="balloon-group">
+        <div class="balloon">
+            <div class="balloon-string"></div>
+        </div>
+        <div class="balloon balloon-2">
+            <div class="balloon-string" style="height: 130px;"></div>
+        </div>
+    </div>
+
+    <!-- 🎈 왼쪽 아래 풍선 그룹 (image_00481e.png 삐뚤어짐 현상 정렬 완료) -->
+    <div class="balloon-left-group">
+        <div class="balloon">
+            <div class="balloon-string" style="height: 125px;"></div>
+        </div>
+        <div class="balloon balloon-left-2">
+            <div class="balloon-string" style="height: 115px;"></div>
+        </div>
+    </div>
 
     <!-- 최상단 헤더 프로필 영역 -->
     <header>
@@ -310,7 +447,7 @@
         <h1>사회복지실무역량</h1>
     </header>
 
-    <!-- 파스텔 하늘색 내비게이션 바 -->
+    <!-- 내비게이션 메뉴 바 -->
     <div class="navbar">
         <button class="nav-btn active" onclick="changeTab(0)">📰 종합 뉴스피드</button>
         <button class="nav-btn" onclick="changeTab(1)">📊 사회복지 지표</button>
@@ -454,7 +591,7 @@
                     </div>
                 </div>
 
-                <!-- 병원비 차트 -->
+                <!-- Hospital Fee Chart -->
                 <div class="chart-box">
                     <div class="chart-box-title">반려묘 주요 다빈도 동물병원 치료비 지출 사유 (%)</div>
                     <div class="bar-item">
